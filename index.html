@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -8,54 +9,54 @@
     <link rel="stylesheet" href="./css/bootstrap.min.css">
     <script src="./js/jquery.min.js"></script>
     <style type="text/css">
-        body {
-            font-size: 18px;
-            line-height: 1.42857143;
-        }
-
-        .cursor {
-            cursor: pointer;
-        }
-
-        .answer-content {
-            width: 100%;
-            padding: 12px 5px 0px 5px;
-            border-bottom: 1px solid #dddddd;
-        }
-
-        p {
-            margin: 0 0 0 0;
-            font-size: 14px;
-        }
-
-        .time {
-            text-align: right;
-            font-size: 12px;
-            color: #3e3e3e;
-        }
+    body {
+        font-size: 18px;
+        line-height: 1.42857143;
+    }
+    
+    .cursor {
+        cursor: pointer;
+    }
+    
+    .answer-content {
+        width: 100%;
+        padding: 12px 5px 0px 5px;
+        border-bottom: 1px solid #dddddd;
+    }
+    
+    p {
+        margin: 0 0 0 0;
+        font-size: 14px;
+    }
+    
+    .time {
+        text-align: right;
+        font-size: 12px;
+        color: #3e3e3e;
+    }
     </style>
 </head>
+
 <body>
-
-<div class="container" style="padding-top: 20px;">
-  <div id="question-list">
-    <div class="list-group">
+    <div class="container" style="padding-top: 20px;">
+        <div id="question-list">
+            <div class="list-group">
+            </div>
+            <input type="text" class="form-control" id="newq" placeholder="增加问题">
+            <button type="button" class="btn btn-success" id="addq" style="width:100%">增加</button>
+        </div>
+        <div id="answer-edit" style="display: none;">
+            <textarea id="answer-text" style="width: 100%; height: 580px;"></textarea>
+            <button type="button" class="btn btn-success" id="add-answers">增加</button>
+            <button type="button" class="btn btn-warning" id="return-question">返回</button>
+        </div>
+        <div id="answer-all" style="width: 100%; display: none;">
+        </div>
     </div>
-    <input type="text" class="form-control" id="newq" placeholder="增加问题">
-    <button type="button" class="btn btn-success" id="addq" style="width:100%">增加</button>
-  </div>
-  <div id="answer-edit" style="display: none;">
-      <textarea id="answer-text" style="width: 100%; height: 768px;"></textarea>
-      <button type="button" class="btn btn-success" id="add-answers" style="width:100%">增加</button>
-  </div>  
-  <div id="answer-all" style="width: 100%; display: none;">
-
-  </div>
-</div>
-<script type="text/javascript">
+    <script type="text/javascript">
     Date.prototype.formatNormalTime = function() {
         function full(num) {
-            return (num < 10) ? ("0"+num) : num;
+            return (num < 10) ? ("0" + num) : num;
         }
         var year = this.getFullYear();
         var month = full(this.getMonth() + 1);
@@ -81,9 +82,9 @@
     }
 
     Question.prototype = {
-        initSeq : function() {
+        initSeq: function() {
             var curseq = this.getItem(this.curseqkey);
-            if(!curseq) {
+            if (!curseq) {
                 this.setItem(this.curseqkey, this.curseq);
             } else {
                 this.curseq = Number(curseq) + 1;
@@ -91,40 +92,40 @@
             console.log(this.curseq);
         },
 
-        initQuestion : function () {
+        initQuestion: function() {
             for (var i = 1; i < this.curseq; i++) {
                 var key = this.prefix + i;
                 var question = this.getItem(key);
                 var obj = {
-                    "seq" : i,
-                    "value" : question,
+                    "seq": i,
+                    "value": question,
                 }
                 this.qlist.push(obj);
             }
         },
 
-        getQuestion : function() {
+        getQuestion: function() {
             return this.qlist;
         },
 
-        incrCurSeq : function() {
+        incrCurSeq: function() {
             this.setItem(this.curseqkey, this.curseq);
             this.curseq++;
         },
 
-        getItem : function(key) {
+        getItem: function(key) {
             return this.storage.getItem(key);
         },
 
-        setItem : function(key, value) {
+        setItem: function(key, value) {
             return this.storage.setItem(key, value);
         },
 
-        getCurSeq : function() {
+        getCurSeq: function() {
             return this.curseq;
         },
 
-        add : function(seq, value) {
+        add: function(seq, value) {
             var key = this.prefix + seq;
             this.setItem(key, value);
             this.incrCurSeq();
@@ -144,9 +145,9 @@
     }
 
     Answer.prototype = {
-        initSeq : function() {
+        initSeq: function() {
             var curseq = this.getItem(this.curseqkey);
-            if(!curseq) {
+            if (!curseq) {
                 this.setItem(this.curseqkey, this.curseq);
             } else {
                 this.curseq = Number(curseq) + 1;
@@ -154,32 +155,32 @@
             console.log(this.curseq);
         },
 
-        getItem : function(key) {
+        getItem: function(key) {
             return this.storage.getItem(key);
         },
 
-        setItem : function(key, value) {
+        setItem: function(key, value) {
             return this.storage.setItem(key, value);
         },
 
-        incrCurSeq : function() {
+        incrCurSeq: function() {
             this.setItem(this.curseqkey, this.curseq);
             this.curseq++;
         },
 
-        add : function(value) {
+        add: function(value) {
             var key = this.prefix + this.curseq;
             var date = new Date();
             var obj = {
-                "mil" : date.getTime(),
-                "date" : date.formatNormalTime(),
-                "value" : value,
+                "mil": date.getTime(),
+                "date": date.formatNormalTime(),
+                "value": value,
             };
             this.setItem(key, JSON.stringify(obj));
             this.incrCurSeq();
         },
 
-        getAll : function() {
+        getAll: function() {
             for (var i = 1; i < this.curseq; i++) {
                 var value = this.getItem(this.prefix + i);
                 this.alist.push(value);
@@ -191,30 +192,32 @@
 
     var q = new Question();
     var global_seq = 0;
-    
+
     /////////
     function addQuestion2Doc(seq, value) {
-        var listSubClass = ( seq % 2 == 0) ? "success" : "info";
-        var str = '<div class="list-group-item list-group-item-' + listSubClass + '">' + 
-                  '<span class="question cursor" seq="' + seq + '">' + 
-                  value +'</span><span class="badge cursor" seq="' + seq + '">All</span></div>';
-        
+        var listSubClass = (seq % 2 == 0) ? "success" : "info";
+        var str = '<div class="list-group-item list-group-item-' + listSubClass + '">' +
+            '<span class="question cursor" seq="' + seq + '">' +
+            value + '</span><span class="badge cursor" seq="' + seq + '">All</span></div>';
+
         $(".list-group").append(str);
     }
 
     function bindQuestionAdd() {
-        $("#addq").click(function(){
+        $("#addq").click(function() {
             var newq = $("#newq");
             var seq = q.getCurSeq();
             var value = newq.val();
-            newq.val("");
-            addQuestion2Doc(seq, value);
-            q.add(seq, value);
+            if (value) {
+                newq.val("");
+                addQuestion2Doc(seq, value);
+                q.add(seq, value);
+            }
         });
     }
 
     function bindQuestion() {
-        $("#question-list").on("click", ".question", function(){
+        $("#question-list").on("click", ".question", function() {
             var seq = $(this).attr("seq");
             global_seq = Number(seq);
             console.log(seq);
@@ -223,13 +226,13 @@
     }
 
     function addAnswer2Doc(data) {
-        str = '<div class="answer-content"><p>' + data.value +'</p>' + 
-              '<p class="time">' + data.date + '</p></div>';
+        str = '<div class="answer-content"><p>' + data.value + '</p>' +
+            '<p class="time">' + data.date + '</p></div>';
         $("#answer-all").append(str);
     }
 
     function bindQuestionAll() {
-        $("#question-list").on("click", ".badge", function(){
+        $("#question-list").on("click", ".badge", function() {
             $("#question-list").hide();
             $("#answer-all").show();
             var seq = $(this).attr("seq");
@@ -241,10 +244,7 @@
             for (var i = 0; i < list.length; i++) {
                 addAnswer2Doc(JSON.parse(list[i]));
             }
-
-
             console.log(list);
-
         });
     }
 
@@ -259,15 +259,26 @@
     }
 
     function bindAnswerAdd() {
-        $("#add-answers").click(function(){
+        $("#add-answers").click(function() {
             showQuestionList();
             var a = new Answer(global_seq);
-            a.add($("#answer-text").val());
-            $("#answer-text").val("");
+            var doc = $("#answer-text");
+            var value = doc.val();
+            if (value) {
+                a.add(value);
+                doc.val("");
+            }
         });
     }
-    
-    $(document).ready(function(){
+
+    function bindReturnQuestion() {
+        $("#return-question").click(function(){
+            $("#answer-edit").hide();
+            $("#question-list").show();
+        });
+    }
+
+    $(document).ready(function() {
         var qlist = q.getQuestion();
         for (var i = 0; i < qlist.length; i++) {
             addQuestion2Doc(qlist[i].seq, qlist[i].value);
@@ -282,14 +293,10 @@
 
 
     // localstorage
-    
-
-
-
-</script>
+    </script>
 </body>
-</html>
 
-      <!-- <a href="#" class="list-group-item active">
+</html>
+<!-- <a href="#" class="list-group-item active">
         Cras justo odio
       </a> -->
