@@ -34,23 +34,73 @@
         font-size: 12px;
         color: #3e3e3e;
     }
+
+    .list-item{
+        position: relative;
+        display: block;
+        padding: 10px 15px;
+        margin-bottom: 8px;    
+    }
+    
+    .list-item .badge {
+        float: right;
+        font-size: 13px;
+        line-height: 1.2;
+    }
+    .form-control {
+        border-radius: 0px;
+        height: 40px;
+        font-size: 18px;
+        width: 90%;
+        display: inline-block;
+    }
+    .btn {
+        font-size: 18px;
+        border-radius: 0px; 
+        width: 9%;
+    }
+    .right {
+        float: right;
+    }
+
+    .size13 {
+        font-size: 13px;
+    }
+
+    .content-btn {
+        margin-right: 7px;
+    }
+
+    .mail-width {
+        width: 81%;
+    }
     </style>
 </head>
 
 <body>
     <div class="container" style="padding-top: 20px;">
+    <!-- -->
         <div id="question-list">
             <div class="list-group">
             </div>
-            <input type="text" class="form-control" id="newq" placeholder="增加问题">
-            <button type="button" class="btn btn-success" id="addq" style="width:100%">增加</button>
+            <div>
+                <input type="text" class="form-control" id="newq" placeholder="增加问题">
+                <button type="button" class="btn btn-success" id="addq" style="float: right;">增加</button>
+            </div>    
         </div>
         <div id="answer-edit" style="display: none;">
             <textarea id="answer-text" style="width: 100%; height: 580px;"></textarea>
-            <button type="button" class="btn btn-success" id="add-answers">增加</button>
-            <button type="button" class="btn btn-warning" id="return-question">返回</button>
+            <button type="button" class="btn btn-success right" id="add-answers" style="margin-left: 5px;">增加</button>
+            <button type="button" class="btn btn-warning right" id="return-question">返回</button>
         </div>
         <div id="answer-all" style="width: 100%; display: none;">
+            <div class="content-btn">
+                <input type="email" class="form-control mail-width" id="mailaddress" placeholder="email">
+                <button class="btn btn-warning right" id="returnbtn2">返回</button>
+                <a href="" class="btn btn-success right" id="sendmail" style="margin-right: 5px;">邮件</a>
+            </div>
+            <div id="answer-list">
+            </div>
         </div>
     </div>
     <script type="text/javascript">
@@ -129,6 +179,11 @@
             var key = this.prefix + seq;
             this.setItem(key, value);
             this.incrCurSeq();
+        },
+
+        getSpecQuestion: function(seq) {
+            var key = this.prefix + seq;
+            return this.getItem(key);
         }
 
     };
@@ -164,6 +219,7 @@
         },
 
         incrCurSeq: function() {
+            console.log("xxx " + this.curseqkey + " " + this.curseq);
             this.setItem(this.curseqkey, this.curseq);
             this.curseq++;
         },
@@ -196,7 +252,7 @@
     /////////
     function addQuestion2Doc(seq, value) {
         var listSubClass = (seq % 2 == 0) ? "success" : "info";
-        var str = '<div class="list-group-item list-group-item-' + listSubClass + '">' +
+        var str = '<div class="list-item list-group-item-' + listSubClass + '">' +
             '<span class="question cursor" seq="' + seq + '">' +
             value + '</span><span class="badge cursor" seq="' + seq + '">All</span></div>';
 
@@ -228,7 +284,7 @@
     function addAnswer2Doc(data) {
         str = '<div class="answer-content"><p>' + data.value + '</p>' +
             '<p class="time">' + data.date + '</p></div>';
-        $("#answer-all").append(str);
+        $("#answer-list").append(str);
     }
 
     function bindQuestionAll() {
@@ -237,10 +293,10 @@
             $("#answer-all").show();
             var seq = $(this).attr("seq");
             global_seq = Number(seq);
-            console.log(global_seq);
+            console.log("global_seq" + global_seq);
             var a = new Answer(global_seq);
             var list = a.getAll();
-
+            $("#answer-list").empty();
             for (var i = 0; i < list.length; i++) {
                 addAnswer2Doc(JSON.parse(list[i]));
             }
@@ -278,6 +334,36 @@
         });
     }
 
+    function bindReturnBtn2() {
+        $("#returnbtn2").click(function(){
+            $("#answer-all").hide();
+            $("#question-list").show(100);
+        });
+    }
+
+    function bindSendMail() {
+        $("#sendmail").click(function(){
+            var address = $("#mailaddress").val();
+            var subject = q.getSpecQuestion(global_seq);
+            var a = new Answer(global_seq);
+            var list = a.getAll();
+            var body = "";
+            for (var i = 0; i < list.length; i++) {
+                var obj = JSON.parse(list[i]);
+                body += obj.value;
+                body += "<br /><br />";
+            }
+            
+            var url = "mailto:" + address + "?subject=" + subject + "&body=" + body;
+            console.log(url);
+
+            $("#sendmail").attr("href", url);
+
+        });
+    }
+
+    
+
     $(document).ready(function() {
         var qlist = q.getQuestion();
         for (var i = 0; i < qlist.length; i++) {
@@ -288,6 +374,8 @@
         bindQuestion();
         bindAnswerAdd();
         bindQuestionAll();
+        bindReturnBtn2();
+        bindSendMail();
         console.log(qlist);
     });
 
