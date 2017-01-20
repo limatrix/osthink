@@ -104,6 +104,7 @@
         </div>
     </div>
     <script type="text/javascript">
+    //window.localStorage.clear();   
     Date.prototype.formatNormalTime = function() {
         function full(num) {
             return (num < 10) ? ("0" + num) : num;
@@ -134,23 +135,31 @@
     Question.prototype = {
         initSeq: function() {
             var curseq = this.getItem(this.curseqkey);
+            if (curseq) {
+                this.curseq = Number(curseq) + 1;
+                console.log("seq in storage. curseq : " +  this.curseq);
+            }
+        },
+
+        setSeq: function() {
+            var curseq = this.getItem(this.curseqkey);
             if (!curseq) {
                 this.setItem(this.curseqkey, this.curseq);
-            } else {
-                this.curseq = Number(curseq) + 1;
+                console.log("no seq in storage. curseq : " +  this.curseq);
             }
-            console.log(this.curseq);
         },
 
         initQuestion: function() {
             for (var i = 1; i < this.curseq; i++) {
                 var key = this.prefix + i;
                 var question = this.getItem(key);
-                var obj = {
+                if(question) {
+                    var obj = {
                     "seq": i,
                     "value": question,
+                    }
+                    this.qlist.push(obj);
                 }
-                this.qlist.push(obj);
             }
         },
 
@@ -202,12 +211,18 @@
     Answer.prototype = {
         initSeq: function() {
             var curseq = this.getItem(this.curseqkey);
+            if (curseq) {
+                this.curseq = Number(curseq) + 1;
+                console.log("seq in storage. curseq : " +  this.curseq);
+            }
+        },
+
+        setSeq: function() {
+            var curseq = this.getItem(this.curseqkey);
             if (!curseq) {
                 this.setItem(this.curseqkey, this.curseq);
-            } else {
-                this.curseq = Number(curseq) + 1;
+                console.log("no seq in storage. curseq : " +  this.curseq);
             }
-            console.log(this.curseq);
         },
 
         getItem: function(key) {
@@ -225,6 +240,7 @@
         },
 
         add: function(value) {
+            this.setSeq();
             var key = this.prefix + this.curseq;
             var date = new Date();
             var obj = {
@@ -239,7 +255,9 @@
         getAll: function() {
             for (var i = 1; i < this.curseq; i++) {
                 var value = this.getItem(this.prefix + i);
-                this.alist.push(value);
+                if(value) {
+                    this.alist.push(value);
+                }
             }
 
             return this.alist;
@@ -293,7 +311,7 @@
             $("#answer-all").show();
             var seq = $(this).attr("seq");
             global_seq = Number(seq);
-            console.log("global_seq" + global_seq);
+            console.log("global_seq " + global_seq);
             var a = new Answer(global_seq);
             var list = a.getAll();
             $("#answer-list").empty();
