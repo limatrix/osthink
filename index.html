@@ -14,6 +14,10 @@
         line-height: 1.42857143;
     }
     
+    .container {
+        padding-top: 10px;
+    }
+    
     .cursor {
         cursor: pointer;
     }
@@ -34,12 +38,12 @@
         font-size: 12px;
         color: #3e3e3e;
     }
-
-    .list-item{
+    
+    .list-item {
         position: relative;
         display: block;
         padding: 10px 15px;
-        margin-bottom: 8px;    
+        margin-bottom: 8px;
     }
     
     .list-item .badge {
@@ -47,57 +51,76 @@
         font-size: 13px;
         line-height: 1.2;
     }
+    
     .form-control {
         border-radius: 0px;
         height: 40px;
         font-size: 18px;
-        width: 90%;
+        width: 100%;
         display: inline-block;
+        margin-bottom: 6px;
     }
+    
     .btn {
         font-size: 18px;
-        border-radius: 0px; 
-        width: 9%;
+        border-radius: 0px;
     }
+    
     .right {
         float: right;
     }
-
+    
     .size13 {
         font-size: 13px;
     }
-
+    
     .content-btn {
         margin-right: 7px;
     }
-
-    .mail-width {
-        width: 81%;
+    
+    .one-line {
+        width: 100%;
+    }
+    
+    .half-line {
+        width: 49%;
+    }
+    
+    .answer-text {
+        width: 100%;
+        height: 320px;
+    }
+    
+    .answer-all {
+        width: 100%;
+    }
+    
+    .ml5 {
+        margin-left: 5px;
     }
     </style>
 </head>
 
 <body>
-    <div class="container" style="padding-top: 20px;">
-    <!-- -->
+    <div class="container">
         <div id="question-list">
             <div class="list-group">
             </div>
             <div>
-                <input type="text" class="form-control" id="newq" placeholder="增加问题">
-                <button type="button" class="btn btn-success" id="addq" style="float: right;">增加</button>
-            </div>    
+                <input type="text" class="form-control" id="new-question" placeholder="增加问题">
+                <button type="button" class="btn btn-success one-line" id="add-question">增加</button>
+            </div>
         </div>
         <div id="answer-edit" style="display: none;">
-            <textarea id="answer-text" style="width: 100%; height: 580px;"></textarea>
-            <button type="button" class="btn btn-success right" id="add-answers" style="margin-left: 5px;">增加</button>
-            <button type="button" class="btn btn-warning right" id="return-question">返回</button>
+            <textarea id="answer-text" class="answer-text"></textarea>
+            <button type="button" class="btn btn-success half-line right ml5" id="add-answers">增加</button>
+            <button type="button" class="btn btn-warning half-line" id="return-question">返回</button>
         </div>
-        <div id="answer-all" style="width: 100%; display: none;">
+        <div id="answer-all" class="answer-all" style="display: none;">
             <div class="content-btn">
-                <input type="email" class="form-control mail-width" id="mailaddress" placeholder="email">
-                <button class="btn btn-warning right" id="returnbtn2">返回</button>
-                <a href="" class="btn btn-success right" id="sendmail" style="margin-right: 5px;">邮件</a>
+                <input type="email" class="form-control" id="mailaddress" placeholder="email">
+                <button class="btn btn-warning half-line right" id="return-question-2">返回</button>
+                <a href="" class="btn btn-success half-line" id="sendmail">邮件</a>
             </div>
             <div id="answer-list">
             </div>
@@ -119,9 +142,7 @@
         return year + "-" + month + "-" + day + " " + hour + ":" + minute + ":" + second;
     };
 
-    var c = (new Date()).formatNormalTime();
-    console.log(c)
-
+    // start question
     var Question = function() {
         this.storage = window.localStorage;
         this.curseq = 1;
@@ -137,7 +158,7 @@
             var curseq = this.getItem(this.curseqkey);
             if (curseq) {
                 this.curseq = Number(curseq) + 1;
-                console.log("seq in storage. curseq : " +  this.curseq);
+                console.log("seq in storage. curseq : " + this.curseq);
             }
         },
 
@@ -145,7 +166,7 @@
             var curseq = this.getItem(this.curseqkey);
             if (!curseq) {
                 this.setItem(this.curseqkey, this.curseq);
-                console.log("no seq in storage. curseq : " +  this.curseq);
+                console.log("no seq in storage. curseq : " + this.curseq);
             }
         },
 
@@ -153,10 +174,10 @@
             for (var i = 1; i < this.curseq; i++) {
                 var key = this.prefix + i;
                 var question = this.getItem(key);
-                if(question) {
+                if (question) {
                     var obj = {
-                    "seq": i,
-                    "value": question,
+                        "seq": i,
+                        "value": question,
                     }
                     this.qlist.push(obj);
                 }
@@ -177,7 +198,11 @@
         },
 
         setItem: function(key, value) {
-            return this.storage.setItem(key, value);
+            this.storage.setItem(key, value);
+        },
+
+        removeItem: function(key) {
+            this.storage.removeItem(key);
         },
 
         getCurSeq: function() {
@@ -193,11 +218,19 @@
         getSpecQuestion: function(seq) {
             var key = this.prefix + seq;
             return this.getItem(key);
-        }
+        },
+
+        remove: function(seq) {
+            var key = this.prefix + seq;
+            this.removeItem(key);
+            var a = new Answer(seq);
+            a.removeAll();
+        },
 
     };
     // end question
 
+    // start answer
     var Answer = function(questionSeq) {
         this.storage = window.localStorage;
         this.curseq = 1;
@@ -213,7 +246,7 @@
             var curseq = this.getItem(this.curseqkey);
             if (curseq) {
                 this.curseq = Number(curseq) + 1;
-                console.log("seq in storage. curseq : " +  this.curseq);
+                console.log("seq in storage. curseq : " + this.curseq);
             }
         },
 
@@ -221,7 +254,7 @@
             var curseq = this.getItem(this.curseqkey);
             if (!curseq) {
                 this.setItem(this.curseqkey, this.curseq);
-                console.log("no seq in storage. curseq : " +  this.curseq);
+                console.log("no seq in storage. curseq : " + this.curseq);
             }
         },
 
@@ -230,7 +263,11 @@
         },
 
         setItem: function(key, value) {
-            return this.storage.setItem(key, value);
+            this.storage.setItem(key, value);
+        },
+
+        removeItem: function(key) {
+            this.storage.removeItem(key);
         },
 
         incrCurSeq: function() {
@@ -255,19 +292,37 @@
         getAll: function() {
             for (var i = 1; i < this.curseq; i++) {
                 var value = this.getItem(this.prefix + i);
-                if(value) {
-                    this.alist.push(value);
+                if (value) {
+                    var obj = {};
+                    obj.seq = i;
+                    obj.value = JSON.parse(value);
+                    this.alist.push(obj);
                 }
             }
 
             return this.alist;
+        },
+
+        removeAll: function() {
+            for (var i = 1; i < this.curseq; i++) {
+                var key = this.prefix + i;
+                this.removeItem(key);
+            }
+            this.removeItem(this.curseqkey);
+        },
+
+        remove: function(seq) {
+            var key = this.prefix + seq;
+            this.removeItem(key);
         }
     };
+    // end answer
 
+    // global variable
     var q = new Question();
     var global_seq = 0;
 
-    /////////
+    // doc opt
     function addQuestion2Doc(seq, value) {
         var listSubClass = (seq % 2 == 0) ? "success" : "info";
         var str = '<div class="list-item list-group-item-' + listSubClass + '">' +
@@ -278,30 +333,21 @@
     }
 
     function bindQuestionAdd() {
-        $("#addq").click(function() {
-            var newq = $("#newq");
+        $("#add-question").click(function() {
+            var question = $("#new-question");
             var seq = q.getCurSeq();
-            var value = newq.val();
+            var value = question.val();
             if (value) {
-                newq.val("");
+                question.val("");
                 addQuestion2Doc(seq, value);
                 q.add(seq, value);
             }
         });
     }
 
-    function bindQuestion() {
-        $("#question-list").on("click", ".question", function() {
-            var seq = $(this).attr("seq");
-            global_seq = Number(seq);
-            console.log(seq);
-            showAnswerEdit();
-        });
-    }
-
     function addAnswer2Doc(data) {
-        str = '<div class="answer-content"><p>' + data.value + '</p>' +
-            '<p class="time">' + data.date + '</p></div>';
+        str = '<div class="answer-content" seq="' + data.seq + '"><p>' + data.value.value + '</p>' +
+            '<p class="time">' + data.value.date + '</p></div>';
         $("#answer-list").append(str);
     }
 
@@ -316,7 +362,7 @@
             var list = a.getAll();
             $("#answer-list").empty();
             for (var i = 0; i < list.length; i++) {
-                addAnswer2Doc(JSON.parse(list[i]));
+                addAnswer2Doc(list[i]);
             }
             console.log(list);
         });
@@ -346,32 +392,33 @@
     }
 
     function bindReturnQuestion() {
-        $("#return-question").click(function(){
+        $("#return-question").click(function() {
             $("#answer-edit").hide();
             $("#question-list").show();
         });
     }
 
-    function bindReturnBtn2() {
-        $("#returnbtn2").click(function(){
+    function bindReturnQuestion2() {
+        $("#return-question-2").click(function() {
             $("#answer-all").hide();
             $("#question-list").show(100);
         });
     }
 
     function bindSendMail() {
-        $("#sendmail").click(function(){
+        $("#sendmail").click(function() {
             var address = $("#mailaddress").val();
             var subject = q.getSpecQuestion(global_seq);
             var a = new Answer(global_seq);
             var list = a.getAll();
             var body = "";
+
             for (var i = 0; i < list.length; i++) {
-                var obj = JSON.parse(list[i]);
+                var obj = list[i].value;
                 body += obj.value;
-                body += "<br /><br />";
+                body += "\r\n";
             }
-            
+
             var url = "mailto:" + address + "?subject=" + subject + "&body=" + body;
             console.log(url);
 
@@ -380,7 +427,93 @@
         });
     }
 
-    
+    // start touch
+    var touchEvents = function() {
+        this.touchstart = "touchstart";
+        this.touchmove = "touchmove";
+        this.touchend = "touchend";
+        this.initTouchEvents();
+    };
+
+    touchEvents.prototype.initTouchEvents = function() {
+        if (this.isPC()) {
+            this.touchstart = "mousedown";
+            this.touchmove = "mousemove";
+            this.touchend = "mouseup";
+        }
+    }
+
+    touchEvents.prototype.isPC = function() {
+            var userAgentInfo = navigator.userAgent;
+            var Agents = new Array("Android", "iPhone", "SymbianOS", "Windows Phone", "iPad", "iPod");
+            var flag = true;
+            for (var v = 0; v < Agents.length; v++) {
+                if (userAgentInfo.indexOf(Agents[v]) > 0) {
+                    flag = false;
+                    break;
+                }
+            }
+            return flag;
+        }
+        // end touch
+
+    var touch = new touchEvents();
+
+    var questionTouchTime = 0;
+
+    function bindQuestionTouchEvent() {
+        $("#question-list").on(touch.touchstart, ".question", function(event) {
+            event.preventDefault();
+            questionTouchTime = (new Date()).getTime();
+        });
+
+        $("#question-list").on(touch.touchend, ".question", function(event) {
+            event.preventDefault();
+
+            var seq = $(event.target).attr("seq");
+            global_seq = Number(seq);
+
+            var curtime = (new Date()).getTime();
+            if (curtime - questionTouchTime > 500) {
+                var result = confirm("删除");
+                if (result) {
+                    console.log("removeItem");
+                    q.remove(seq);
+                    $(event.target).parent().remove();
+                }
+            } else {
+                console.log(seq);
+                showAnswerEdit();
+            }
+        });
+    }
+
+    var answerTouchTime = 0;
+
+    function bindAnswerTouchEvent() {
+        $("#answer-list").on(touch.touchstart, ".answer-content", function(event) {
+            event.preventDefault();
+            answerTouchTime = (new Date()).getTime();
+        });
+
+        $("#answer-list").on(touch.touchend, ".answer-content", function(event) {
+            event.preventDefault();
+            var seq = $(event.currentTarget).attr("seq");
+            console.log("answer-seq : " + seq);
+            var curtime = (new Date()).getTime();
+            if (curtime - answerTouchTime > 500) {
+                var result = confirm("删除");
+                if (result) {
+                    var a = new Answer(global_seq);
+                    a.remove(seq);
+                    $(event.currentTarget).remove();
+                    console.log("removeItem");
+                }
+            } else {
+
+            }
+        });
+    }
 
     $(document).ready(function() {
         var qlist = q.getQuestion();
@@ -389,20 +522,17 @@
         }
 
         bindQuestionAdd();
-        bindQuestion();
+        bindQuestionTouchEvent();
+        bindAnswerTouchEvent();
         bindAnswerAdd();
         bindQuestionAll();
-        bindReturnBtn2();
+        bindReturnQuestion();
+        bindReturnQuestion2();
         bindSendMail();
+
         console.log(qlist);
     });
-
-
-    // localstorage
     </script>
 </body>
 
 </html>
-<!-- <a href="#" class="list-group-item active">
-        Cras justo odio
-      </a> -->
