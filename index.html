@@ -75,7 +75,7 @@
     }
     
     .content-btn {
-        margin-right: 7px;
+        margin-right: 0px;
     }
     
     .one-line {
@@ -119,8 +119,8 @@
         <div id="answer-all" class="answer-all" style="display: none;">
             <div class="content-btn">
                 <input type="email" class="form-control" id="mailaddress" placeholder="email">
-                <button class="btn btn-warning half-line right" id="return-question-2">返回</button>
-                <a href="" class="btn btn-success half-line" id="sendmail">邮件</a>
+                <a href="" class="btn btn-success half-line right" id="sendmail">邮件</a>
+                <button class="btn btn-warning half-line" id="return-question-2">返回</button>
             </div>
             <div id="answer-list">
             </div>
@@ -384,6 +384,8 @@
             var a = new Answer(global_seq);
             var doc = $("#answer-text");
             var value = doc.val();
+            value = value.replace(/ /g, "&nbsp;&nbsp;");
+            value = value.replace(/\n/g, "<br />");
             if (value) {
                 a.add(value);
                 doc.val("");
