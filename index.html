@@ -98,6 +98,10 @@
     .ml5 {
         margin-left: 5px;
     }
+
+    .badge {
+        margin-left: 18px;
+    }
     </style>
 </head>
 
@@ -327,7 +331,7 @@
         var listSubClass = (seq % 2 == 0) ? "success" : "info";
         var str = '<div class="list-item list-group-item-' + listSubClass + '">' +
             '<span class="question cursor" seq="' + seq + '">' +
-            value + '</span><span class="badge cursor" seq="' + seq + '">All</span></div>';
+            value + '</span><span class="badge all" seq="' + seq + '">All</span><span class="badge del" seq="' + seq + '">Del</span></div>';
 
         $(".list-group").append(str);
     }
@@ -347,12 +351,12 @@
 
     function addAnswer2Doc(data) {
         str = '<div class="answer-content" seq="' + data.seq + '"><p>' + data.value.value + '</p>' +
-            '<p class="time">' + data.value.date + '</p></div>';
+            '<p class="time">' + data.value.date + '&nbsp;&nbsp;&nbsp; <span id="delAnswer">删除</span></p></div>';
         $("#answer-list").append(str);
     }
 
     function bindQuestionAll() {
-        $("#question-list").on("click", ".badge", function() {
+        $("#question-list").on("click", ".all", function() {
             $("#question-list").hide();
             $("#answer-all").show();
             var seq = $(this).attr("seq");
@@ -365,6 +369,26 @@
                 addAnswer2Doc(list[i]);
             }
             console.log(list);
+        });
+    }
+
+    function bindQuestionDel() {
+        $("#question-list").on("click", ".del", function() {  
+            var result = confirm("删除");
+            if (result) {
+                var seq = $(this).attr("seq");
+                console.log(seq);
+                q.remove(seq);
+                $(this).parent().remove();
+            }
+        });
+    }
+
+    function bindShowAnswerEdit() {
+        $("#question-list").on("click", ".question", function() {  
+            var seq = $(this).attr("seq");
+            global_seq = Number(seq);
+            showAnswerEdit();
         });
     }
 
@@ -429,90 +453,15 @@
         });
     }
 
-    // start touch
-    var touchEvents = function() {
-        this.touchstart = "touchstart";
-        this.touchmove = "touchmove";
-        this.touchend = "touchend";
-        this.initTouchEvents();
-    };
-
-    touchEvents.prototype.initTouchEvents = function() {
-        if (this.isPC()) {
-            this.touchstart = "mousedown";
-            this.touchmove = "mousemove";
-            this.touchend = "mouseup";
-        }
-    }
-
-    touchEvents.prototype.isPC = function() {
-            var userAgentInfo = navigator.userAgent;
-            var Agents = new Array("Android", "iPhone", "SymbianOS", "Windows Phone", "iPad", "iPod");
-            var flag = true;
-            for (var v = 0; v < Agents.length; v++) {
-                if (userAgentInfo.indexOf(Agents[v]) > 0) {
-                    flag = false;
-                    break;
-                }
-            }
-            return flag;
-        }
-        // end touch
-
-    var touch = new touchEvents();
-
-    var questionTouchTime = 0;
-
-    function bindQuestionTouchEvent() {
-        $("#question-list").on(touch.touchstart, ".question", function(event) {
-            event.preventDefault();
-            questionTouchTime = (new Date()).getTime();
-        });
-
-        $("#question-list").on(touch.touchend, ".question", function(event) {
-            event.preventDefault();
-
-            var seq = $(event.target).attr("seq");
-            global_seq = Number(seq);
-
-            var curtime = (new Date()).getTime();
-            if (curtime - questionTouchTime > 500) {
-                var result = confirm("删除");
-                if (result) {
-                    console.log("removeItem");
-                    q.remove(seq);
-                    $(event.target).parent().remove();
-                }
-            } else {
-                console.log(seq);
-                showAnswerEdit();
-            }
-        });
-    }
-
-    var answerTouchTime = 0;
-
-    function bindAnswerTouchEvent() {
-        $("#answer-list").on(touch.touchstart, ".answer-content", function(event) {
-            event.preventDefault();
-            answerTouchTime = (new Date()).getTime();
-        });
-
-        $("#answer-list").on(touch.touchend, ".answer-content", function(event) {
-            event.preventDefault();
-            var seq = $(event.currentTarget).attr("seq");
-            console.log("answer-seq : " + seq);
-            var curtime = (new Date()).getTime();
-            if (curtime - answerTouchTime > 500) {
-                var result = confirm("删除");
-                if (result) {
-                    var a = new Answer(global_seq);
-                    a.remove(seq);
-                    $(event.currentTarget).remove();
-                    console.log("removeItem");
-                }
-            } else {
-
+    function bindAnswerDel() {
+        $("#answer-list").on("click", "#delAnswer", function(){
+            var content = $(this).parent().parent();
+            var seq = content.attr("seq");
+            var result = confirm("删除");
+            if (result) {
+                var a = new Answer(global_seq);
+                a.remove(seq);
+                content.remove();
             }
         });
     }
@@ -524,13 +473,14 @@
         }
 
         bindQuestionAdd();
-        bindQuestionTouchEvent();
-        bindAnswerTouchEvent();
         bindAnswerAdd();
         bindQuestionAll();
+        bindQuestionDel();
+        bindShowAnswerEdit();
         bindReturnQuestion();
         bindReturnQuestion2();
         bindSendMail();
+        bindAnswerDel();
 
         console.log(qlist);
     });
